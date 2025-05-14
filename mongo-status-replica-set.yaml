@@ -1,0 +1,11 @@
+---
+- name: Verificar o status do Replica Set do MongoDB
+  hosts: mongo_primary
+  become: true
+  tasks:
+    - name: Verificar status do Replica Set
+      command: mongo --eval "rs.status()"
+      register: rs_status
+
+    - debug:
+        var: rs_status.stdout
