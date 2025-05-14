@@ -11,10 +11,15 @@
       debug:
         var: replica_status.stdout
 
+    - name: Converter a saída do rs.isMaster() para JSON
+      set_fact:
+        replica_status_json: "{{ replica_status.stdout | from_json }}"
+
     - name: Extrair o IP do primário do Replica Set
       set_fact:
-        primary_host: "{{ replica_status.stdout | regex_search('\"primary\"\\s*:\\s*\"([^\"]+)\"', '\\1') }}"
+        primary_host: "{{ replica_status_json.primary }}"
       when: replica_status.stdout != ""
+
 
     - name: Exibir o IP do primário
       debug:
