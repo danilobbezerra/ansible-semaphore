@@ -13,7 +13,7 @@
 
     - name: Extrair o IP do primário do Replica Set
       set_fact:
-        primary_host: "{{ replica_status.stdout | regex_search('\"primary\" : \"(\\S+)', '\\1') }}"
+        primary_host: "{{ replica_status.stdout | regex_search('\"primary\"\\s*:\\s*\"([^\"]+)\"', '\\1') }}"
       when: replica_status.stdout != ""
 
     - name: Exibir o IP do primário
