@@ -11,20 +11,24 @@
       debug:
         var: replica_status.stdout
 
-    - name: Verificar se a saída não está vazia antes de converter para JSON
-      fail:
-        msg: "rs.isMaster() retornou uma saída vazia. Verifique o MongoDB e sua conectividade."
-      when: replica_status.stdout == ""
-
-    - name: Converter a saída do rs.isMaster() para JSON
+    - name: Extrair a parte JSON da saída
       set_fact:
-        replica_status_json: "{{ replica_status.stdout | from_json }}"
+        replica_json_string: "{{ replica_status.stdout | regex_search('{.*}', '\\0') }}"
       when: replica_status.stdout != ""
+
+    - name: Verificar se a parte JSON foi extraída corretamente
+      debug:
+        var: replica_json_string
+
+    - name: Converter a parte JSON da saída para JSON
+      set_fact:
+        replica_status_json: "{{ replica_json_string | from_json }}"
+      when: replica_json_string != ""
 
     - name: Extrair o IP do primário do Replica Set
       set_fact:
         primary_host: "{{ replica_status_json.primary }}"
-      when: replica_status.stdout != ""
+      when: replica_status_json is defined
 
     - name: Exibir o IP do primário
       debug:
