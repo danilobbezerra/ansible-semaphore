@@ -1,18 +1,26 @@
 ---
 - name: Verificar o status do Replica Set do MongoDB
-  hosts: all  # Pode ser qualquer host (não importa se primário ou secundário)
+  hosts: all  # Ou qualquer grupo que contenha os nós do cluster MongoDB
   tasks:
     - name: Obter informações sobre o Replica Set (rs.isMaster)
       command: mongo --eval "rs.isMaster()"
       register: replica_status
+      ignore_errors: true  # Ignorar erro caso a execução falhe
 
-    - debug:
+    - name: Exibir a saída do rs.isMaster()
+      debug:
         var: replica_status.stdout
 
     - name: Extrair o IP do primário do Replica Set
       set_fact:
-        primary_host: "{{ replica_status.stdout | regex_search('primary\" : \"(\\S+)', '\\1') }}"
-    
+        primary_host: "{{ replica_status.stdout | regex_search('\"primary\" : \"(\\S+)', '\\1') }}"
+      when: replica_status.stdout != ""
+
+    - name: Exibir o IP do primário
+      debug:
+        var: primary_host
+
     - name: Verificar o status do Replica Set no primário
       command: mongo --eval "rs.status()"
-      delegate_to: "{{ primary_host }}"  # Redireciona para o primário
+      delegate_to: "{{ primary_host }}"
+      when: primary_host is defined
