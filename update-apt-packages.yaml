@@ -1,12 +1,15 @@
 ---
 - hosts: all
-
   become: true
   tasks:
-    - name: update apt packages
+    - name: Atualizar o cache de pacotes
       apt:
-        update: yes
-        upgrade: yes
-        dist-upgrade: yes
         update_cache: yes
-      become: true
+
+    - name: Atualizar pacotes com upgrade
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Realizar dist-upgrade
+      command: apt-get dist-upgrade -y
