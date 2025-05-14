@@ -5,6 +5,8 @@
   tasks:
     - name: update apt packages
       apt:
+        update: yes
         upgrade: yes
+        dist-upgrade: yes
         update_cache: yes
       become: true
