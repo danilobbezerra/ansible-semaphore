@@ -1,11 +1,18 @@
 ---
 - name: Verificar o status do Replica Set do MongoDB
-  hosts: mongo_primary
-  become: true
+  hosts: all  # Pode ser qualquer host (não importa se primário ou secundário)
   tasks:
-    - name: Verificar status do Replica Set
-      command: mongo --eval "rs.status()"
-      register: rs_status
+    - name: Obter informações sobre o Replica Set (rs.isMaster)
+      command: mongo --eval "rs.isMaster()"
+      register: replica_status
 
     - debug:
-        var: rs_status.stdout
+        var: replica_status.stdout
+
+    - name: Extrair o IP do primário do Replica Set
+      set_fact:
+        primary_host: "{{ replica_status.stdout | regex_search('primary\" : \"(\\S+)', '\\1') }}"
+    
+    - name: Verificar o status do Replica Set no primário
+      command: mongo --eval "rs.status()"
+      delegate_to: "{{ primary_host }}"  # Redireciona para o primário
